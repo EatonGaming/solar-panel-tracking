@@ -37,26 +37,7 @@ namespace IngameScript
 
         public void Main(string argument, UpdateType updateSource)
         {
-            var rotorZ = GridTerminalSystem.GetBlockWithName("Rotor Z");
-            var rotorY = GridTerminalSystem.GetBlockWithName("Rotor Y");
-
-            if (rotorZ != null)
-            {
-                _out.Log("Found Rotor Z!");
-            }
-            else
-            {
-                _out.Log("Unable to find rotor z.");
-            }
-
-            if (rotorY != null)
-            {
-                _out.Log("Found Rotor Y!");
-            }
-            else
-            {
-                _out.Log("Unable to find rotor y.");
-            }
+            SolarPanelTower tower1 = new SolarPanelTower(_out, GridTerminalSystem);
         }
     }
 }

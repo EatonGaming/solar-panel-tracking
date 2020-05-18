@@ -38,6 +38,7 @@
   <Import Project="MDK/MDK.options.props" />
   <Import Project="MDK/MDK.paths.props" Condition="exists('MDK/MDK.paths.props')" />
   <ItemGroup>
+    <Compile Include="SolarPanelTower.cs" />
     <Compile Include="Utilities\About.cs" />
     <Compile Include="Utilities\Debug.cs" />
     <Compile Include="MDK\Bootstrapper.cs" />
