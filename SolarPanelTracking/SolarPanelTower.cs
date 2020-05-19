@@ -23,6 +23,9 @@ namespace IngameScript
     {
         public class SolarPanelTower
         {
+            private const float DefaultTorque = 5.0f;
+            private const float DefaultVelocity = 5.0f;
+
             private readonly DebugLCD _out;
             private readonly IMyGridTerminalSystem _myGridTerminalSystem;
 
@@ -35,11 +38,36 @@ namespace IngameScript
                 _myGridTerminalSystem = myGridTerminalSystem;
 
                 Initialise();
-                ResetPosition();
+                ResetPositions();
             }
 
-            private void ResetPosition()
+            private void ResetPositions()
             {
+                _out.Log("Resetting motor positions...");
+
+                MoveRotorToPosition(_rotorZ, 0);
+                MoveRotorToPosition(_rotorY, 0);
+            }
+
+            private void MoveRotorToPosition(IMyMotorStator rotor, float targetAngle)
+            {
+                _out.Log($"Moving {rotor.CustomName} to position {targetAngle}...");
+
+                float initialAngle = rotor.Angle;
+                float angleToRotate = targetAngle - initialAngle;
+
+                if (angleToRotate == 0)
+                {
+                    return;
+                }
+
+                rotor.LowerLimitDeg = targetAngle;
+                rotor.UpperLimitDeg = targetAngle;
+
+                float velocity = (angleToRotate > 0) ? DefaultVelocity : -DefaultVelocity;
+                rotor.TargetVelocityRPM = velocity;
+
+                _out.Log($"{rotor.CustomName} movement completed.");
             }
 
             private void Initialise()
