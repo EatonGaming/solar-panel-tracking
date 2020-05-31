@@ -25,11 +25,20 @@ namespace IngameScript
         {
             private const string DefaultName = "Debug LCD";
             private const string NewlineCharacter = "\n";
+            private const int MaxCharsPerLine = 45;
 
             private readonly IMyGridTerminalSystem _myGridTerminalSystem;
             private readonly string _name;
 
             private IMyTextPanel _block;
+
+            public LogLevel Level { get; set; } = LogLevel.Info;
+
+            public enum LogLevel
+            {
+                Info = 0,
+                Debug = 1
+            }
 
             public DebugLCD(IMyGridTerminalSystem myGridTerminalSystem)
             {
@@ -50,12 +59,34 @@ namespace IngameScript
                 _block.WriteText("\n", append: true);
             }
 
+            internal void Debug(string message)
+            {
+                if (Level >= LogLevel.Debug)
+                {
+                    Log(message);
+                }
+            }
+
             public void Log(string message, bool append = true)
             {
                 var display = InitialiseDebugDisplay();
+
+                message = AddLineWrapToMessage(message);
                 var text = $"{message}{NewlineCharacter}";
 
                 display?.WriteText(text, append);
+            }
+
+            private string AddLineWrapToMessage(string message)
+            {
+                if (message.Length <= MaxCharsPerLine) return message;
+
+                for (int i = MaxCharsPerLine; i < message.Length; i += MaxCharsPerLine)
+                {
+                    message = message.Insert(i - 1, NewlineCharacter);
+                }
+
+                return message;
             }
 
             public void Log(Exception exception)
