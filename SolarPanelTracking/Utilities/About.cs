@@ -23,9 +23,13 @@ namespace IngameScript
     {
         public static class About
         {
+            private static readonly int _majorVersion = 0;
+            private static readonly int _minorVersion = 0;
+            private static readonly int _revision = 1;
+
             public static string ScriptName = "Solar Panel Tracking";
             public static string ScriptAuthor = "EatonGaming";
-            public static string ScriptVersion = "0.0.1";
+            public static string ScriptVersion = $"{_majorVersion}.{_minorVersion}.{_revision}";
         }
     }
 }
