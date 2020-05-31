@@ -27,15 +27,15 @@ namespace IngameScript
             private const float DefaultVelocity = 5.0f;
 
             private readonly DebugLCD _out;
-            private readonly IMyGridTerminalSystem _myGridTerminalSystem;
+            private readonly BlockCache _blockCache;
 
             private IMyMotorStator _rotorZ;
             private IMyMotorStator _rotorY;
 
-            public SolarPanelTower(DebugLCD debugLCD, IMyGridTerminalSystem myGridTerminalSystem)
+            public SolarPanelTower(DebugLCD debugLCD, BlockCache blockCache)
             {
                 _out = debugLCD;
-                _myGridTerminalSystem = myGridTerminalSystem;
+                _blockCache = blockCache;
 
                 Initialise();
                 ResetPositions();
@@ -72,25 +72,10 @@ namespace IngameScript
 
             private void Initialise()
             {
-                _rotorZ = FindBlock<IMyMotorStator>("Rotor Z");
-                _rotorY = FindBlock<IMyMotorStator>("Rotor Y");
+                _rotorZ = _blockCache.GetBlockWithName<IMyMotorStator>("Rotor Z");
+                _rotorY = _blockCache.GetBlockWithName<IMyMotorStator>("Rotor Y");
 
                 _out.Log("Solar Panel 1 Initialised.");
-            }
-
-            private T FindBlock<T>(string name)
-            {
-                T block = (T) _myGridTerminalSystem.GetBlockWithName(name);
-
-                if (block != null)
-                {
-                    return block;
-                }
-                else
-                {
-                    _out.Log($"Unable to find block '{name}'.");
-                    return default(T);
-                }
             }
         }
     }

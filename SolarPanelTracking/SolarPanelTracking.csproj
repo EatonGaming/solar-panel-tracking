@@ -28,6 +28,7 @@
     <Reference Include="netstandard" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,6 +41,7 @@
   <ItemGroup>
     <Compile Include="SolarPanelTower.cs" />
     <Compile Include="Utilities\About.cs" />
+    <Compile Include="Utilities\BlockCache.cs" />
     <Compile Include="Utilities\Debug.cs" />
     <Compile Include="MDK\Bootstrapper.cs" />
     <AdditionalFiles Include="MDK\MDK.options.props">

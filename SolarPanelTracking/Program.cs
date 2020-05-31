@@ -23,11 +23,13 @@ namespace IngameScript
     {
         private readonly Debug _debug;
         private readonly DebugLCD _out;
+        private readonly BlockCache _blockCache;
 
         public Program()
         {
             _out = new DebugLCD(GridTerminalSystem);
             _debug = new Debug(_out);
+            _blockCache = new BlockCache(GridTerminalSystem, _out);
         }
 
         public void Save()
@@ -37,7 +39,7 @@ namespace IngameScript
 
         public void Main(string argument, UpdateType updateSource)
         {
-            SolarPanelTower tower1 = new SolarPanelTower(_out, GridTerminalSystem);
+            SolarPanelTower tower1 = new SolarPanelTower(_out, _blockCache);
         }
     }
 }
