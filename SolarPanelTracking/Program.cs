@@ -24,12 +24,16 @@ namespace IngameScript
         private readonly Debug _debug;
         private readonly DebugLCD _out;
         private readonly BlockCache _blockCache;
+        private readonly SolarPanelTower _tower;
 
         public Program()
         {
             _out = new DebugLCD(GridTerminalSystem);
             _debug = new Debug(_out);
             _blockCache = new BlockCache(GridTerminalSystem, _out);
+            _tower = new SolarPanelTower(_out, _blockCache);
+
+            Runtime.UpdateFrequency = UpdateFrequency.Update100;
         }
 
         public void Save()
@@ -39,7 +43,7 @@ namespace IngameScript
 
         public void Main(string argument, UpdateType updateSource)
         {
-            SolarPanelTower tower1 = new SolarPanelTower(_out, _blockCache);
+            _tower.CheckForUpdates();
         }
     }
 }

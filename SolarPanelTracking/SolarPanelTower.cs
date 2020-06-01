@@ -16,6 +16,7 @@ using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Game;
 using VRage;
 using VRageMath;
+using System.Text.RegularExpressions;
 
 namespace IngameScript
 {
@@ -23,14 +24,20 @@ namespace IngameScript
     {
         public class SolarPanelTower
         {
-            private const float DefaultTorque = 5.0f;
-            private const float DefaultVelocity = 5.0f;
+            private const float DefaultTorque = 1f;
+            private const float DefaultVelocity = 1f;
+            private const float NoTargetAngle = -1f;
+            private const string CurrentAngleRegexPattern = @".*?: (<angle>\d+)°";
 
             private readonly DebugLCD _out;
             private readonly BlockCache _blockCache;
 
             private IMyMotorStator _rotorZ;
             private IMyMotorStator _rotorY;
+
+            private SolarPanelState _state = SolarPanelState.Idle;
+            private float _rotorZTargetAngle = NoTargetAngle;
+            private float _rotorYTargetAngle = NoTargetAngle;
 
             public SolarPanelTower(DebugLCD debugLCD, BlockCache blockCache)
             {
@@ -41,24 +48,84 @@ namespace IngameScript
                 ResetPositions();
             }
 
+            public void CheckForUpdates()
+            {
+                switch (_state)
+                {
+                    case SolarPanelState.Idle:
+                        break;
+                    case SolarPanelState.Moving:
+                        CheckMovementProgress();
+                        break;
+                }
+            }
+
+            private void CheckMovementProgress()
+            {
+                _out.Log("Checking progress...");
+
+                bool rotorZComplete = GetCurrentAngle(_rotorZ) != _rotorZTargetAngle;
+                if (rotorZComplete)
+                {
+                    _rotorZTargetAngle = NoTargetAngle;
+                    _out.Log("Rotor Z movement completed.");
+                }
+
+                bool rotorYComplete = GetCurrentAngle(_rotorY) != _rotorYTargetAngle;
+                if (rotorYComplete)
+                {
+                    _rotorYTargetAngle = NoTargetAngle;
+                    _out.Log("Rotor Y movement completed.");
+                }
+
+                if (rotorZComplete && rotorYComplete)
+                {
+                    _state = SolarPanelState.Idle;
+                    _out.Log("All movements complete.");
+                }
+            }
+
+            private float GetCurrentAngle(IMyMotorStator rotorZ)
+            {
+                IMyPistonBase myPistonBase = (IMyPistonBase)rotorZ;
+                string detailedInfo = myPistonBase.DetailedInfo;
+                _out.Log($"Detailed Info: {detailedInfo}");
+
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(CurrentAngleRegexPattern);
+                System.Text.RegularExpressions.Match match = regex.Match(detailedInfo);
+
+                if (match.Success)
+                {
+                    string extractedAngle = match.Groups["angle"].Value;
+                    _out.Log($"Angle {extractedAngle} found!");
+                    return float.Parse(extractedAngle);
+                }
+                else
+                {
+                    _out.Log("Unable to find angle.");
+                    return 0f;
+                }
+            }
+
             private void ResetPositions()
             {
                 _out.Log("Resetting motor positions...");
 
-                MoveRotorToPosition(_rotorZ, 0);
-                MoveRotorToPosition(_rotorY, 0);
+                _rotorZTargetAngle = MoveRotorToPosition(_rotorZ, 0);
+                _rotorYTargetAngle = MoveRotorToPosition(_rotorY, 0);
             }
 
-            private void MoveRotorToPosition(IMyMotorStator rotor, float targetAngle)
+            private float MoveRotorToPosition(IMyMotorStator rotor, float targetAngle)
             {
                 _out.Log($"Moving {rotor.CustomName} to position {targetAngle}...");
+                _state = SolarPanelState.Moving;
 
                 float initialAngle = rotor.Angle;
                 float angleToRotate = targetAngle - initialAngle;
 
                 if (angleToRotate == 0)
                 {
-                    return;
+                    return NoTargetAngle;
                 }
 
                 rotor.LowerLimitDeg = targetAngle;
@@ -67,7 +134,7 @@ namespace IngameScript
                 float velocity = (angleToRotate > 0) ? DefaultVelocity : -DefaultVelocity;
                 rotor.TargetVelocityRPM = velocity;
 
-                _out.Log($"{rotor.CustomName} movement completed.");
+                return targetAngle;
             }
 
             private void Initialise()
@@ -77,6 +144,12 @@ namespace IngameScript
 
                 _out.Log("Solar Panel 1 Initialised.");
             }
+        }
+
+        public enum SolarPanelState
+        {
+            Idle,
+            Moving
         }
     }
 }
